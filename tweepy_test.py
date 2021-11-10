@@ -13,7 +13,7 @@ f = open("tweets.txt", "w")
 
 # Search for tweets and save the in tweets.txt
 
-for tweet in tweepy.Cursor(api.search_tweets, q="$NVDA stock", lang="en", tweet_mode='extended').items(500):
+for tweet in tweepy.Cursor(api.search_tweets, q="$NVDA stock ", lang="en", tweet_mode='extended').items(500):
     f.write(str(tweet.full_text).replace("\n", " "))
     documents.append(str(tweet.full_text).replace("\n", " "))
     f.write("\n")
