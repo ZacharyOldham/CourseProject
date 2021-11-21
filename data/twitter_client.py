@@ -27,5 +27,5 @@ if __name__ == "__main__":
     twitter_client = TwitterClient("xlinnUvFlgoU2JQlynXU5Vx14",
                                    "36Pdrs0qNMqYUg8DBbVBRAiSC4i5yNb27Xo6Tm9XGg5JlNpBeT")
     tweets = twitter_client.query("$amzn")
-    twitter_client.save(tweets, "tweets2.txt")
+    twitter_client.save(tweets, "tweets.txt")
 
