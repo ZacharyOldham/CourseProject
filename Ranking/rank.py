@@ -21,6 +21,10 @@ class TweetRanking:
         :param remove_stopwords: Option to remove stopwords from set of tweets, default = True
         :param remove_digits: Option to remove numbers from set of tweets, default = True
         :param remove_rare_words: Option to remove word that appear only once, default = True
+        BM25 Parameters:
+        PARAM_K1 = 1.5
+        PARAM_B = 0.75
+        EPSILON = 0.25
         """
         self.corpus = corpus
         self.query = query
