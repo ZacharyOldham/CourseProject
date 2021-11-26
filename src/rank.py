@@ -3,6 +3,7 @@ from gensim import corpora
 from gensim.summarization import bm25
 import nltk
 from nltk.corpus import stopwords
+import os
 
 nltk.download("stopwords")
 
@@ -10,7 +11,7 @@ nltk.download("stopwords")
 class TweetRanking:
 
     def __init__(self, corpus, query="stock market", output_file="output.txt", top_k=20, remove_stopwords=True,
-                 remove_digits=True, remove_rare_words=True):
+                 remove_digits=True, remove_rare_words=True, write_to_file=False):
         """
         Rank provided tweets using BM25 scoring.
 
@@ -26,6 +27,7 @@ class TweetRanking:
         PARAM_B = 0.75
         EPSILON = 0.25
         """
+        self.original_tweets = []
         self.corpus = corpus
         self.query = query
         self.output_file = output_file
@@ -33,6 +35,7 @@ class TweetRanking:
         self.remove_stopwords = remove_stopwords
         self.remove_digits = remove_digits
         self.remove_rare_words = remove_rare_words
+        self.write_to_file = write_to_file
         self.preprocess_file = "preprocess.txt"
 
     def save_to_file(self, tweet, file):
@@ -56,6 +59,7 @@ class TweetRanking:
         open(self.preprocess_file, "r+").truncate(0)
         with open(self.corpus, "r") as tweets_doc:
             for tweet in tweets_doc:
+                self.original_tweets.append(tweet)
                 self.save_to_file(self.preprocess_tweet(tweet), self.preprocess_file)
 
     def count_words(self):
@@ -104,13 +108,16 @@ class TweetRanking:
         query_doc = dictionary.doc2bow(self.query.split())
         scores = bm25_obj.get_scores(query_doc)
         best_tweets = sorted(range(len(scores)), key=lambda i: scores[i])[-self.top_k:]
-        open(self.output_file, "w+")
-        open(self.output_file, "r+").truncate(0)
+        if self.write_to_file:
+            open(self.output_file, "w+")
+            open(self.output_file, "r+").truncate(0)
         output = []
         for tweet_index in best_tweets:
-            self.save_to_file(processed_corpus[tweet_index], self.output_file)
-            output.append(processed_corpus[tweet_index])
+            if self.write_to_file:
+                self.save_to_file(self.original_tweets[tweet_index], self.output_file)
+            output.append(self.original_tweets[tweet_index])
 
+        os.remove(self.preprocess_file)
         return output
 
 

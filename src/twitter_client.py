@@ -22,6 +22,18 @@ class TwitterClient:
             with open(filename, "w") as sfile:
                 sfile.write("\n".join(tweets))
 
+class Tweet:
+    def __init__(self, text, likes, comments, retweets, followers):
+        self.text = text
+        self.likes = likes
+        self.comments = comments
+        self.retweets = retweets
+        self.followers = followers
+
+
+def getTweets(symbol, name, industry):
+    pass
+
 
 if __name__ == "__main__":
     twitter_client = TwitterClient("xlinnUvFlgoU2JQlynXU5Vx14",

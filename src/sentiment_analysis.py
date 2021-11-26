@@ -220,7 +220,7 @@ if __name__ == "__main__":
     # Load training data
     print("Loading Training Data")
     training_data = []
-    with open("training_data.csv", "r") as f:
+    with open("../Data/training_data.csv", "r") as f:
         i = -1
         for line in f:
             i += 1
@@ -236,7 +236,7 @@ if __name__ == "__main__":
     # Load test data
     print("Loading Test Data")
     test_data = []
-    with open("test_data.csv", "r") as f:
+    with open("../Data/test_data.csv", "r") as f:
         for line in f:
             row = preprocess(line)
             if row is not None:
