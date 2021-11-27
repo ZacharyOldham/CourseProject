@@ -88,6 +88,7 @@ if __name__ == "__main__":
     # Retrieve relevant-ish tweets from twitter
     twitter_client = twitter_client.TwitterClient()
     tweets = twitter_client.get_tweets(symbol, name, industry)
+    twitter_client.save(tweets, "asdf.txt")
     tweets_lookup = {}
     for i in range(0, len(tweets)):
         tweet = tweets[i]

@@ -35,7 +35,16 @@ class TwitterClient:
 
     def __preprocess(self, raw_tweet):
         # Remove emojis
-        demoji_str = demoji.replace(raw_tweet.full_text, "").strip().replace("\n", " ")
+        # demoji_str = demoji.replace(raw_tweet.full_text, "").strip().replace("\n", " ")
+        ASCII = ''.join(chr(x) for x in range(128))
+        raw_str = raw_tweet.full_text
+        demoji_str = ""
+        for c in raw_str:
+            if c in ASCII:
+                demoji_str += c
+
+        demoji_str = demoji_str.strip().replace("\n", " ")
+        print(demoji_str)
 
         # Remove RT user names
         demoji_str = re.sub(r'RT @\w+: ?', '', demoji_str)
@@ -46,6 +55,9 @@ class TwitterClient:
 
         # Remove http urls
         demoji_str = re.sub(r'http\S+', '', demoji_str)
+
+        # Force lowercase
+        demoji_str = demoji_str.lower()
 
         tweet = Tweet()
         tweet.text = demoji_str
