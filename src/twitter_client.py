@@ -1,4 +1,5 @@
 import re
+import string
 from dataclasses import dataclass
 
 import demoji
@@ -44,6 +45,12 @@ class TwitterClient:
         # Remove hashtags
         # demoji_str = re.sub(r'#\w+ ?', '', demoji_str)
 
+        # Remove ascii characters
+        demoji_str = demoji_str.encode("ascii", "ignore").decode()
+
+        # Remove any punctuations
+        demoji_str = demoji_str.translate(str.maketrans('', '', string.punctuation))
+
         # Remove http urls
         demoji_str = re.sub(r'http\S+', '', demoji_str)
 
@@ -69,7 +76,7 @@ class TwitterClient:
 
 if __name__ == "__main__":
     twitter_client = TwitterClient()
-    loaded_tweets = twitter_client.get_tweets("$amzn", allow_duplicates=False, tweets_limit=50)
+    loaded_tweets = twitter_client.get_tweets("amzn", allow_duplicates=False, tweets_limit=50)
     # print(loaded_tweets)
     # twitter_client.save(loaded_tweets, "tweets.txt")
 
