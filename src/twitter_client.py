@@ -29,10 +29,11 @@ class Tweet:
         self.comments = comments
         self.retweets = retweets
         self.followers = followers
+        self.sentiment_score = None
 
 
 def getTweets(symbol, name, industry):
-    pass
+    return [Tweet("I like dogs", 0, 0, 0, 5), Tweet("I hate hate hate hate hate goldfish", 0, 0, 0, 8)]
 
 
 if __name__ == "__main__":

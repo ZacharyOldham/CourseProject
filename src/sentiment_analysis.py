@@ -7,6 +7,7 @@ import torch.optim as optim
 from torch.utils import data
 import random
 import string
+import os
 
 ALL_PUNCT = string.punctuation
 PAD = '<PAD>'
@@ -166,6 +167,7 @@ def accuracy(output, labels):
 
 def train(model, epochs, loader, optimizer, criterion):
     model.train()
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     for cur_epoch in range(0, epochs):
         epoch_loss = 0
         epoch_acc = 0
@@ -209,7 +211,13 @@ def evaluate(model, loader, criterion):
     predictions = torch.cat(all_predictions)
     return predictions, acc, loss
 
-if __name__ == "__main__":
+def build_model(force_rebuild=False):
+
+    # Check if we need to build a new model or load one
+    if not force_rebuild and os.path.exists("../Data/model"):
+        model = torch.load("../Data/model")
+        return model
+
     THRESHOLD = 5
     MAX_LEN = 100
     BATCH_SIZE = 32
@@ -262,4 +270,6 @@ if __name__ == "__main__":
     criterion = nn.CrossEntropyLoss().to(device)
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
     train(model, EPOCHS, training_loader, optimizer, criterion)
-    evaluate(model, test_loader, criterion)
+    # evaluate(model, test_loader, criterion)
+    torch.save(model, "../Data/model")
+    return model

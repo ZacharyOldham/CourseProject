@@ -1,4 +1,5 @@
 import csv
+import math
 import twitter_client
 import rank
 import sentiment_analysis
@@ -31,6 +32,20 @@ class Stocks:
 
     def isName(self, name):
         return name in self.name_lookup
+
+def computeSentimentScore(positive_tweets, negative_tweets):
+    pos_score = 0
+    neg_score = 0
+    for tweet in positive_tweets:
+        pos_score += ((tweet.likes + 1.0) ** (1.0 / 3.0)) * ((tweet.comments + 1.0) ** (1.0 / 2.0)) * ((tweet.retweets + 1.0) ** (1.0 / 3.0)) * ((tweet.followers + 1.0) ** (1.0 / 4.0))
+
+    for tweet in negative_tweets:
+        neg_score += ((tweet.likes + 1.0) ** (1.0 / 3.0)) * ((tweet.comments + 1.0) ** (1.0 / 2.0)) * ((tweet.retweets + 1.0) ** (1.0 / 3.0)) * ((tweet.followers + 1.0) ** (1.0 / 4.0))
+
+    if pos_score > neg_score:
+        return pos_score / (pos_score + neg_score)
+    else:
+        return -1.0 * neg_score / (pos_score + neg_score)
 
 if __name__ == "__main__":
 
@@ -67,6 +82,7 @@ if __name__ == "__main__":
     run_number += 1
     with open("../Tweets/run_number", "w") as f:
         f.write(str(run_number))
+    print("Outputs stored with run number " + str(run_number))
 
     # Retrieve relevant-ish tweets from twitter
     tweets = twitter_client.getTweets(symbol, name, industry)
@@ -77,14 +93,53 @@ if __name__ == "__main__":
 
     # Save all tweets to a file so we can find the best ones
     all_tweet_file = "../Tweets/all_tweets_" + str(run_number) + ".txt"
+    ranked_tweet_file = "../Tweets/relevant_tweets_" + str(run_number) + ".txt"
+    positive_tweet_file = "../Tweets/positive_tweets_" + str(run_number) + ".txt"
+    negative_tweet_file = "../Tweets/negative_tweets_" + str(run_number) + ".txt"
+
     with open(all_tweet_file, "w") as f:
         for tweet in tweets:
             f.write(tweet.text)
 
-    # # Rank tweets, get best 200 tweets
-    # best_tweet_indices = rank.get
+    # # Rank tweets, get best 50 tweets
+    query = symbol + " " + name
+    ranker = rank.TweetRanking(all_tweet_file, query, ranked_tweet_file, 50, write_to_file=True)
+    best_tweets_text = ranker.get_ranked_documents()
+    best_tweets = []
+    for i in range(0, len(best_tweets)):
+        best_tweets.append(tweets[tweets_lookup[best_tweets[i]]])
     
+    # Classfiy the best tweets (0 = negative, 1 = positive)
+    model = sentiment_analysis.build_model()
+    print("DONE BUILDING MODEL")
+    labels = model(best_tweets_text)
+    for i in range(0, len(best_tweets)):
+        best_tweets[i].sentiment_score = labels[i]
 
-    
+    positive_tweets = []
+    negative_tweets = []
+    for tweet in best_tweets:
+        if tweets.sentiment_score < 0.5:
+            negative_tweets.append(tweet)
+        else:
+            positive_tweets.append(tweet)
 
+    positive_tweets.sort(key=lambda x: x.sentiment_score, reverse=True)
+    negative_tweets.sort(key=lambda x: x.sentiment_score)
+
+    # Persist the classifications
+    with open(positive_tweet_file, "w") as f:
+        for tweet in positive_tweets:
+            f.write(tweet.text)
     
+    with open(negative_tweet_file, "w") as f:
+        for tweet in negative_tweets:
+            f.write(tweet.text)
+
+    # Compute sentiment score
+    score = computeSentimentScore(positive_tweets, negative_tweets)
+    print("Positive Tweets: ")
+    print(positive_tweets)
+    print("Negative Tweets:")
+    print(negative_tweets)
+    print("Sentiment score (ranges from -1 to 1, positive is positive: " + str(score))
