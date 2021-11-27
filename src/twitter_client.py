@@ -37,12 +37,12 @@ class TwitterClient:
         # Remove emojis
         demoji_str = demoji.replace(raw_tweet.full_text, "").strip().replace("\n", " ")
 
-        # Remove user names
+        # Remove RT user names
         demoji_str = re.sub(r'RT @\w+: ?', '', demoji_str)
-        demoji_str = re.sub(r'@\w+ ?', '', demoji_str)
+        # demoji_str = re.sub(r'@\w+ ?', '', demoji_str)
 
         # Remove hashtags
-        demoji_str = re.sub(r'#\w+ ?', '', demoji_str)
+        # demoji_str = re.sub(r'#\w+ ?', '', demoji_str)
 
         # Remove http urls
         demoji_str = re.sub(r'http\S+', '', demoji_str)
