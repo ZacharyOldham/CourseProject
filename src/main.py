@@ -38,10 +38,10 @@ def computeSentimentScore(positive_tweets, negative_tweets):
     pos_score = 0
     neg_score = 0
     for tweet in positive_tweets:
-        pos_score += ((tweet.likes + 1.0) ** (1.0 / 3.0)) * ((tweet.comments + 1.0) ** (1.0 / 2.0)) * ((tweet.retweets + 1.0) ** (1.0 / 3.0)) * ((tweet.followers + 1.0) ** (1.0 / 4.0))
+        pos_score += ((tweet.likes_count + 1.0) ** (1.0 / 3.0)) * ((tweet.retweets_count + 1.0) ** (1.0 / 3.0)) * ((tweet.followers_count + 1.0) ** (1.0 / 4.0))
 
     for tweet in negative_tweets:
-        neg_score += ((tweet.likes + 1.0) ** (1.0 / 3.0)) * ((tweet.comments + 1.0) ** (1.0 / 2.0)) * ((tweet.retweets + 1.0) ** (1.0 / 3.0)) * ((tweet.followers + 1.0) ** (1.0 / 4.0))
+        neg_score += ((tweet.likes_count + 1.0) ** (1.0 / 3.0)) * ((tweet.retweets_count + 1.0) ** (1.0 / 3.0)) * ((tweet.followers_count + 1.0) ** (1.0 / 4.0))
 
     if pos_score + neg_score == 0:
         return 0
@@ -107,10 +107,12 @@ if __name__ == "__main__":
     # # Rank tweets, get best 50 tweets
     query = symbol + " " + name
     ranker = rank.TweetRanking(all_tweet_file, query, ranked_tweet_file, 50, write_to_file=True)
-    best_tweets_text = ranker.get_ranked_documents()
+    best_tweets_index = ranker.get_ranked_documents()
     best_tweets = []
-    for i in range(0, len(best_tweets_text)):
-        best_tweets.append(tweets[tweets_lookup[best_tweets_text[i]]])
+    best_tweets_text = []
+    for i in range(0, len(best_tweets_index)):
+        best_tweets.append(tweets[best_tweets_index[i]])
+        best_tweets_text.append(tweets[best_tweets_index[i]].text)
     
     # Classfiy the best tweets (0 = negative, 1 = positive)
     model, idx2word, word2idx = sentiment_analysis.build_model()

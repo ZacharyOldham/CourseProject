@@ -117,7 +117,7 @@ class TweetRanking:
         for tweet_index in best_tweets:
             if self.write_to_file:
                 self.save_to_file(self.original_tweets[tweet_index], self.output_file)
-            output.append(self.original_tweets[tweet_index])
+            output.append(tweet_index)
 
         os.remove(self.preprocess_file)
         return output
