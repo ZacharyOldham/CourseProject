@@ -38,10 +38,16 @@ def computeSentimentScore(positive_tweets, negative_tweets):
     pos_score = 0
     neg_score = 0
     for tweet in positive_tweets:
-        pos_score += ((tweet.likes_count + 1.0) ** (1.0 / 3.0)) * ((tweet.retweets_count + 1.0) ** (1.0 / 3.0)) * ((tweet.followers_count + 1.0) ** (1.0 / 4.0))
+        if tweet.sentiment_score < 0:
+            print("ERROR: NOT A POSITIVE TWEET")
+            exit()
+        pos_score += tweet.sentiment_score * ((tweet.likes_count + 1.0) ** (1.0 / 3.0)) * ((tweet.retweets_count + 1.0) ** (1.0 / 3.0)) * ((tweet.followers_count + 1.0) ** (1.0 / 4.0))
 
     for tweet in negative_tweets:
-        neg_score += ((tweet.likes_count + 1.0) ** (1.0 / 3.0)) * ((tweet.retweets_count + 1.0) ** (1.0 / 3.0)) * ((tweet.followers_count + 1.0) ** (1.0 / 4.0))
+        if tweet.sentiment_score > 0:
+            print("ERROR: NOT A NEGATIVE TWEET")
+            exit()
+        neg_score -= tweet.sentiment_score * ((tweet.likes_count + 1.0) ** (1.0 / 3.0)) * ((tweet.retweets_count + 1.0) ** (1.0 / 3.0)) * ((tweet.followers_count + 1.0) ** (1.0 / 4.0))
 
     if pos_score + neg_score == 0:
         return 0
@@ -88,7 +94,6 @@ if __name__ == "__main__":
     # Retrieve relevant-ish tweets from twitter
     twitter_client = twitter_client.TwitterClient()
     tweets = twitter_client.get_tweets(symbol, name, industry)
-    twitter_client.save(tweets, "asdf.txt")
     tweets_lookup = {}
     for i in range(0, len(tweets)):
         tweet = tweets[i]
@@ -125,7 +130,7 @@ if __name__ == "__main__":
     positive_tweets = []
     negative_tweets = []
     for tweet in best_tweets:
-        if tweet.sentiment_score == 0:
+        if tweet.sentiment_score < 0:
             negative_tweets.append(tweet)
         else:
             positive_tweets.append(tweet)

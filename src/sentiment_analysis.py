@@ -237,9 +237,14 @@ def predict(model, idx2word, word2idx, tweets):
     for tweet_batch, _ in loader:
         tweet_batch = tweet_batch.to(device)
         out = model(tweet_batch)
-        all_predictions.append(out.argmax(dim=1))
-    predictions = torch.cat(all_predictions)
-    return predictions.tolist()
+        preds = []
+        for i in range(0, len(out)):
+            preds.append(out[i][1] - out[i][0])
+            preds[-1] = preds[-1].item()
+        # print(out)
+        # print(preds)
+        all_predictions.extend(preds)
+    return all_predictions
 
 def build_model(force_rebuild=False):
 
