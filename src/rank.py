@@ -59,6 +59,7 @@ class TweetRanking:
         open(self.preprocess_file, "r+").truncate(0)
         with open(self.corpus, "r") as tweets_doc:
             for tweet in tweets_doc:
+                tweet = tweet.strip()
                 self.original_tweets.append(tweet)
                 self.save_to_file(self.preprocess_tweet(tweet), self.preprocess_file)
 
@@ -102,6 +103,7 @@ class TweetRanking:
         """
         self.pre_process_corpus()
         processed_corpus = self.get_processed_corpus()
+        # print(processed_corpus)
         dictionary = corpora.Dictionary(processed_corpus)
         corpus = [dictionary.doc2bow(text) for text in processed_corpus]
         bm25_obj = bm25.BM25(corpus)

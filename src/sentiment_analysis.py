@@ -13,6 +13,12 @@ ALL_PUNCT = string.punctuation
 PAD = '<PAD>'
 END = '<END>'
 UNK = '<UNK>'
+THRESHOLD = 5
+MAX_LEN = 100
+BATCH_SIZE = 32
+LEARNING_RATE = 5e-4
+EPOCHS = 20
+device = torch.device("cpu")
 
 class TextDataset(data.Dataset):
     def __init__(self, examples, split, threshold, max_len, idx2word=None, word2idx=None):
@@ -153,11 +159,19 @@ def preprocess(line):
         return None
     if row[0] == 4:
         row[0] = 1
+    # for punct in ALL_PUNCT:
+    #     if punct != "@":
+    #         row[1] = row[1].replace(punct, "")
+    # row[1] = row[1][1:-1].split(" ")
+    row[1] = preprocess_string(row[1][1:-1])
+    return row
+
+def preprocess_string(in_str):
+    out_str = in_str
     for punct in ALL_PUNCT:
         if punct != "@":
-            row[1] = row[1].replace(punct, "")
-    row[1] = row[1][1:-1].split(" ")
-    return row
+            out_str = out_str.replace(punct, "")
+    return out_str.split(" ")
 
 def accuracy(output, labels):
     preds = output.argmax(dim=1)
@@ -211,19 +225,23 @@ def evaluate(model, loader, criterion):
     predictions = torch.cat(all_predictions)
     return predictions, acc, loss
 
+def predict(model, idx2word, word2idx, tweets):
+    data = [[0, preprocess_string(x)] for x in tweets]
+
+    dataset = TextDataset(data, "test", THRESHOLD, MAX_LEN, idx2word, word2idx)
+    loader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=False, num_workers=1, drop_last=False)
+    # dataset = TextDataset(data, "test", THRESHOLD, MAX_LEN)
+    # loader = torch.utils.data.DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=2, drop_last=True)
+    model.eval()
+    all_predictions = []
+    for tweet_batch, _ in loader:
+        tweet_batch = tweet_batch.to(device)
+        out = model(tweet_batch)
+        all_predictions.append(out.argmax(dim=1))
+    predictions = torch.cat(all_predictions)
+    return predictions.tolist()
+
 def build_model(force_rebuild=False):
-
-    # Check if we need to build a new model or load one
-    if not force_rebuild and os.path.exists("../Data/model"):
-        model = torch.load("../Data/model")
-        return model
-
-    THRESHOLD = 5
-    MAX_LEN = 100
-    BATCH_SIZE = 32
-    LEARNING_RATE = 5e-4
-    EPOCHS = 20
-    device = torch.device("cpu")
 
     # Load training data
     print("Loading Training Data")
@@ -252,6 +270,11 @@ def build_model(force_rebuild=False):
     test_dataset = TextDataset(test_data, "test", THRESHOLD, MAX_LEN, training_dataset.idx2word, training_dataset.word2idx)
     test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=1, drop_last=False)
 
+    # Check if we need to build a new model or load one
+    if not force_rebuild and os.path.exists("../Data/model"):
+        model = torch.load("../Data/model")
+        return (model, training_dataset.idx2word, training_dataset.word2idx)
+
     # Build RNN
     print("Building RNN")
     model =   RNN(vocab_size=training_dataset.vocab_size,
@@ -272,4 +295,4 @@ def build_model(force_rebuild=False):
     train(model, EPOCHS, training_loader, optimizer, criterion)
     # evaluate(model, test_loader, criterion)
     torch.save(model, "../Data/model")
-    return model
+    return (model, training_dataset.idx2word, training_dataset.word2idx)

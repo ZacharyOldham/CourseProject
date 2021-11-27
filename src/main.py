@@ -42,10 +42,10 @@ def computeSentimentScore(positive_tweets, negative_tweets):
     for tweet in negative_tweets:
         neg_score += ((tweet.likes + 1.0) ** (1.0 / 3.0)) * ((tweet.comments + 1.0) ** (1.0 / 2.0)) * ((tweet.retweets + 1.0) ** (1.0 / 3.0)) * ((tweet.followers + 1.0) ** (1.0 / 4.0))
 
-    if pos_score > neg_score:
-        return pos_score / (pos_score + neg_score)
-    else:
-        return -1.0 * neg_score / (pos_score + neg_score)
+    if pos_score + neg_score == 0:
+        return 0
+
+    return (pos_score - neg_score) / (pos_score + neg_score)
 
 if __name__ == "__main__":
 
@@ -99,27 +99,28 @@ if __name__ == "__main__":
 
     with open(all_tweet_file, "w") as f:
         for tweet in tweets:
-            f.write(tweet.text)
+            f.write(tweet.text + "\n")
 
     # # Rank tweets, get best 50 tweets
     query = symbol + " " + name
     ranker = rank.TweetRanking(all_tweet_file, query, ranked_tweet_file, 50, write_to_file=True)
     best_tweets_text = ranker.get_ranked_documents()
     best_tweets = []
-    for i in range(0, len(best_tweets)):
-        best_tweets.append(tweets[tweets_lookup[best_tweets[i]]])
+    for i in range(0, len(best_tweets_text)):
+        best_tweets.append(tweets[tweets_lookup[best_tweets_text[i]]])
     
     # Classfiy the best tweets (0 = negative, 1 = positive)
-    model = sentiment_analysis.build_model()
-    print("DONE BUILDING MODEL")
-    labels = model(best_tweets_text)
+    model, idx2word, word2idx = sentiment_analysis.build_model()
+    # print("DONE BUILDING MODEL")
+    # print(best_tweets_text)
+    labels = sentiment_analysis.predict(model, idx2word, word2idx, best_tweets_text)
     for i in range(0, len(best_tweets)):
         best_tweets[i].sentiment_score = labels[i]
 
     positive_tweets = []
     negative_tweets = []
     for tweet in best_tweets:
-        if tweets.sentiment_score < 0.5:
+        if tweet.sentiment_score == 0:
             negative_tweets.append(tweet)
         else:
             positive_tweets.append(tweet)
@@ -139,7 +140,7 @@ if __name__ == "__main__":
     # Compute sentiment score
     score = computeSentimentScore(positive_tweets, negative_tweets)
     print("Positive Tweets: ")
-    print(positive_tweets)
+    print([x.text for x in positive_tweets])
     print("Negative Tweets:")
-    print(negative_tweets)
-    print("Sentiment score (ranges from -1 to 1, positive is positive: " + str(score))
+    print([x.text for x in negative_tweets])
+    print("Sentiment score (ranges from -1 to 1): " + str(score))

@@ -33,7 +33,7 @@ class Tweet:
 
 
 def getTweets(symbol, name, industry):
-    return [Tweet("I like dogs", 0, 0, 0, 5), Tweet("I hate hate hate hate hate goldfish", 0, 0, 0, 8)]
+    return [Tweet("good good", 0, 0, 0, 5), Tweet("bad badj", 0, 0, 0, 8)]
 
 
 if __name__ == "__main__":
