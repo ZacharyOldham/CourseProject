@@ -4,6 +4,7 @@ import twitter_client
 import rank
 import sentiment_analysis
 
+
 class Stocks:
     def __init__(self):
         self.stocks = []
@@ -85,7 +86,8 @@ if __name__ == "__main__":
     print("Outputs stored with run number " + str(run_number))
 
     # Retrieve relevant-ish tweets from twitter
-    tweets = twitter_client.getTweets(symbol, name, industry)
+    twitter_client = twitter_client.TwitterClient()
+    tweets = twitter_client.get_tweets(symbol, name, industry)
     tweets_lookup = {}
     for i in range(0, len(tweets)):
         tweet = tweets[i]
