@@ -167,7 +167,7 @@ def preprocess(line):
     return row
 
 def preprocess_string(in_str):
-    out_str = in_str
+    out_str = in_str.lower()
     for punct in ALL_PUNCT:
         if punct != "@":
             out_str = out_str.replace(punct, "")
