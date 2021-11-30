@@ -15,9 +15,9 @@ END = '<END>'
 UNK = '<UNK>'
 THRESHOLD = 5
 MAX_LEN = 100
-BATCH_SIZE = 32
+BATCH_SIZE = 256
 LEARNING_RATE = 5e-4
-EPOCHS = 50
+EPOCHS = 25
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class TextDataset(data.Dataset):
@@ -254,7 +254,7 @@ def build_model(force_rebuild=False):
         i = -1
         for line in f:
             i += 1
-            if i % 5 != 0:    # Only load 1/160 of the training data
+            if i % 1 != 0:    # Only load 1/160 of the training data
                 continue
             
             row = preprocess(line)
@@ -262,7 +262,12 @@ def build_model(force_rebuild=False):
                 training_data.append(row)
     training_dataset = TextDataset(training_data, "train", THRESHOLD, MAX_LEN)
     training_loader = torch.utils.data.DataLoader(training_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=2, drop_last=True)
-    
+
+    # Check if we need to build a new model or load one
+    if not force_rebuild and os.path.exists("../Data/model"):
+        model = torch.load("../Data/model")
+        return (model, training_dataset.idx2word, training_dataset.word2idx)
+
     # Load test data
     print("Loading Test Data")
     test_data = []
@@ -274,18 +279,13 @@ def build_model(force_rebuild=False):
     test_dataset = TextDataset(test_data, "test", THRESHOLD, MAX_LEN, training_dataset.idx2word, training_dataset.word2idx)
     test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=1, drop_last=False)
 
-    # Check if we need to build a new model or load one
-    if not force_rebuild and os.path.exists("../Data/model"):
-        model = torch.load("../Data/model")
-        return (model, training_dataset.idx2word, training_dataset.word2idx)
-
     print("Building model using " + ("GPU" if torch.cuda.is_available() else "CPU"))
 
     # Build RNN
     print("Building RNN")
     model =   RNN(vocab_size=training_dataset.vocab_size,
-            embed_size=128,
-            hidden_size=128,
+            embed_size=256,
+            hidden_size=256,
             num_layers=2,
             bidirectional=True,
             dropout=0.5,

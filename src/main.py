@@ -149,8 +149,10 @@ if __name__ == "__main__":
 
     # Compute sentiment score
     score = computeSentimentScore(positive_tweets, negative_tweets)
-    print("Positive Tweets: ")
-    print([x.text for x in positive_tweets])
-    print("Negative Tweets:")
-    print([x.text for x in negative_tweets])
+    print("\n\nPositive Tweets: ")
+    for tweet in positive_tweets:
+        print(tweet.text)
+    print("\n\nNegative Tweets:")
+    for tweet in negative_tweets:
+        print(tweet.text + "\n")
     print("Sentiment score (ranges from -1 to 1): " + str(score))
