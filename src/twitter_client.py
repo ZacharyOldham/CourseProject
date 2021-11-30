@@ -34,6 +34,11 @@ class TwitterClient:
         return tweets
 
     def __preprocess(self, raw_tweet):
+
+        if raw_tweet.full_text.count("$") > 3:
+            # print(f"tweet dropped -> {raw_tweet}")
+            return Tweet()
+
         # Remove emojis
         # demoji_str = demoji.replace(raw_tweet.full_text, "").strip().replace("\n", " ")
         ASCII = ''.join(chr(x) for x in range(128))
@@ -68,8 +73,14 @@ class TwitterClient:
     def __query(self, search_query, tweets_limit=50):
         raw_tweets = tweepy.Cursor(self.api.search_tweets,
                                    q=search_query, lang="en",
+                                   result_type="recent",
                                    tweet_mode='extended').items(tweets_limit)
-        processed_tweets = [self.__preprocess(rt) for rt in raw_tweets]
+        processed_tweets = []
+        for rt in raw_tweets:
+            pt = self.__preprocess(rt)
+            if len(pt.text) > 0:
+                processed_tweets.append(pt)
+
         return processed_tweets
 
     def save(self, tweets, filename):
@@ -80,7 +91,7 @@ class TwitterClient:
 
 if __name__ == "__main__":
     twitter_client = TwitterClient()
-    loaded_tweets = twitter_client.get_tweets("amzn", allow_duplicates=False, tweets_limit=500)
+    loaded_tweets = twitter_client.get_tweets("amzn", allow_duplicates=False, tweets_limit=1000)
     # print(loaded_tweets)
     # twitter_client.save(loaded_tweets, "tweets.txt")
 
