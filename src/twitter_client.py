@@ -44,7 +44,6 @@ class TwitterClient:
                 demoji_str += c
 
         demoji_str = demoji_str.strip().replace("\n", " ")
-        print(demoji_str)
 
         # Remove RT user names
         demoji_str = re.sub(r'RT @\w+: ?', '', demoji_str)

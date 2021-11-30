@@ -17,8 +17,8 @@ THRESHOLD = 5
 MAX_LEN = 100
 BATCH_SIZE = 32
 LEARNING_RATE = 5e-4
-EPOCHS = 20
-device = torch.device("cpu")
+EPOCHS = 50
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class TextDataset(data.Dataset):
     def __init__(self, examples, split, threshold, max_len, idx2word=None, word2idx=None):
@@ -181,7 +181,6 @@ def accuracy(output, labels):
 
 def train(model, epochs, loader, optimizer, criterion):
     model.train()
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     for cur_epoch in range(0, epochs):
         epoch_loss = 0
         epoch_acc = 0
@@ -255,7 +254,7 @@ def build_model(force_rebuild=False):
         i = -1
         for line in f:
             i += 1
-            if i % 40 != 0:    # Only load 1/160 of the training data
+            if i % 5 != 0:    # Only load 1/160 of the training data
                 continue
             
             row = preprocess(line)
@@ -279,6 +278,8 @@ def build_model(force_rebuild=False):
     if not force_rebuild and os.path.exists("../Data/model"):
         model = torch.load("../Data/model")
         return (model, training_dataset.idx2word, training_dataset.word2idx)
+
+    print("Building model using " + ("GPU" if torch.cuda.is_available() else "CPU"))
 
     # Build RNN
     print("Building RNN")
