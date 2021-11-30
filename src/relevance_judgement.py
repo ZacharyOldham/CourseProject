@@ -1,5 +1,3 @@
-import os
-
 from textblob import TextBlob
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
@@ -42,7 +40,5 @@ def save_output(list_with_score, outfile):
 
 
 if __name__ == "__main__":
-    ROOT_DIR = os.path.abspath(os.curdir)
-    print(ROOT_DIR)
     relevance_judgement_using_textblob("../relevance/raw_tweets.txt", "../relevance/relevance_textblob.txt")
     relevance_judgement_using_vader("../relevance/raw_tweets.txt", "../relevance/relevance_vader.txt")

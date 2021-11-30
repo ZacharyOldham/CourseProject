@@ -80,7 +80,7 @@ class TwitterClient:
 
 if __name__ == "__main__":
     twitter_client = TwitterClient()
-    loaded_tweets = twitter_client.get_tweets("$amzn", allow_duplicates=False, tweets_limit=50)
+    loaded_tweets = twitter_client.get_tweets("amzn", allow_duplicates=False, tweets_limit=500)
     # print(loaded_tweets)
     # twitter_client.save(loaded_tweets, "tweets.txt")
 
