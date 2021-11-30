@@ -8,11 +8,16 @@ from torch.utils import data
 import random
 import string
 import os
+import re
 
 ALL_PUNCT = string.punctuation
 PAD = '<PAD>'
 END = '<END>'
 UNK = '<UNK>'
+NUM = '<NUM>'
+NAME = '<NAME>'
+URL = '<URL>'
+STOCK = '<STOCK>'
 THRESHOLD = 5
 MAX_LEN = 100
 BATCH_SIZE = 256
@@ -168,10 +173,34 @@ def preprocess(line):
 
 def preprocess_string(in_str):
     out_str = in_str.lower()
+
+    # Remove retweet info
+    out_str = re.sub(r'^rt @\w+:? ?', '', out_str)
+
+    # Replace URLs with uniform tokens
+    out_str = re.sub(r'http\S+', URL, out_str)
+
+    # Replace stock tickers with uniform tokens
+    out_str = re.sub(r'\$[a-z]+', STOCK, out_str)
+
+    # Remove punctuation
     for punct in ALL_PUNCT:
         if punct != "@":
             out_str = out_str.replace(punct, "")
-    return out_str.split(" ")
+    out_toks = out_str.split()
+
+    # Replace numbers and names with uniform tokens
+    for i in range(len(out_toks)-1, -1, -1):
+        if out_toks[i].isnumeric():
+            out_toks[i] = NUM
+        elif out_toks[i][0] == "@":
+            out_toks[i] = NAME
+        else:
+            out_toks[i] = out_toks[i].replace("@", "")
+            if len(out_toks[i]) == 0:
+                out_toks.pop(i)
+
+    return out_toks
 
 def accuracy(output, labels):
     preds = output.argmax(dim=1)

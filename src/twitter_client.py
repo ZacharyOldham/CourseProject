@@ -43,17 +43,8 @@ class TwitterClient:
             if c in ASCII:
                 demoji_str += c
 
+        # Remove newlines
         demoji_str = demoji_str.strip().replace("\n", " ")
-
-        # Remove RT user names
-        demoji_str = re.sub(r'RT @\w+: ?', '', demoji_str)
-        # demoji_str = re.sub(r'@\w+ ?', '', demoji_str)
-
-        # Remove hashtags
-        # demoji_str = re.sub(r'#\w+ ?', '', demoji_str)
-
-        # Remove http urls
-        demoji_str = re.sub(r'http\S+', '', demoji_str)
 
         # Force lowercase
         demoji_str = demoji_str.lower()

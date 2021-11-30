@@ -3,7 +3,7 @@ import math
 import twitter_client
 import rank
 import sentiment_analysis
-
+import statistics
 
 class Stocks:
     def __init__(self):
@@ -34,9 +34,10 @@ class Stocks:
     def isName(self, name):
         return name in self.name_lookup
 
-def computeSentimentScore(positive_tweets, negative_tweets):
+def computeSentimentScore(positive_tweets, negative_tweets, neutral_tweets, neutral_cutoff):
     pos_score = 0
     neg_score = 0
+    neu_score = 0
     for tweet in positive_tweets:
         if tweet.sentiment_score < 0:
             print("ERROR: NOT A POSITIVE TWEET")
@@ -49,10 +50,16 @@ def computeSentimentScore(positive_tweets, negative_tweets):
             exit()
         neg_score -= tweet.sentiment_score * ((tweet.likes_count + 1.0) ** (1.0 / 3.0)) * ((tweet.retweets_count + 1.0) ** (1.0 / 3.0)) * ((tweet.followers_count + 1.0) ** (1.0 / 4.0))
 
-    if pos_score + neg_score == 0:
+    for tweet in neutral_tweets:
+        if abs(tweet.sentiment_score) > neutral_cutoff:
+            print("ERROR: NOT A NEUTRAL TWEET")
+            exit()
+        neu_score += (neutral_cutoff - abs(tweet.sentiment_score)) * ((tweet.likes_count + 1.0) ** (1.0 / 3.0)) * ((tweet.retweets_count + 1.0) ** (1.0 / 3.0)) * ((tweet.followers_count + 1.0) ** (1.0 / 4.0))
+
+    if pos_score + neg_score + neu_score == 0:
         return 0
 
-    return (pos_score - neg_score) / (pos_score + neg_score)
+    return (pos_score - neg_score) / (pos_score + neg_score + neu_score)
 
 if __name__ == "__main__":
 
@@ -104,6 +111,7 @@ if __name__ == "__main__":
     ranked_tweet_file = "../Tweets/relevant_tweets_" + str(run_number) + ".txt"
     positive_tweet_file = "../Tweets/positive_tweets_" + str(run_number) + ".txt"
     negative_tweet_file = "../Tweets/negative_tweets_" + str(run_number) + ".txt"
+    neutral_tweet_file = "../Tweets/neutral_tweets_" + str(run_number) + ".txt"
 
     with open(all_tweet_file, "w") as f:
         for tweet in tweets:
@@ -119,24 +127,42 @@ if __name__ == "__main__":
         best_tweets.append(tweets[best_tweets_index[i]])
         best_tweets_text.append(tweets[best_tweets_index[i]].text)
     
-    # Classfiy the best tweets (0 = negative, 1 = positive)
+    # Get tweet classifications < 0 = negative, > 0 = positive
     model, idx2word, word2idx = sentiment_analysis.build_model()
-    # print("DONE BUILDING MODEL")
-    # print(best_tweets_text)
     labels = sentiment_analysis.predict(model, idx2word, word2idx, best_tweets_text)
     for i in range(0, len(best_tweets)):
         best_tweets[i].sentiment_score = labels[i]
 
+    # Separate the tweets by classification
+    amplitudes = []
     positive_tweets = []
     negative_tweets = []
     for tweet in best_tweets:
+        amplitudes.append(abs(tweet.sentiment_score))
         if tweet.sentiment_score < 0:
             negative_tweets.append(tweet)
         else:
             positive_tweets.append(tweet)
+    
+    # Move tweets whose degree of sentiment is > one std below the average degree into a 'neutral' list
+    amplitude_std = statistics.stdev(amplitudes)
+    amplitude_avg = statistics.mean(amplitudes)
+    neutral_cutoff = amplitude_avg - amplitude_std
+    neutral_tweets = []
+    for i in range(len(positive_tweets) - 1, -1, -1):
+        tweet = positive_tweets[i]
+        if abs(tweet.sentiment_score) < neutral_cutoff:
+            positive_tweets.pop(i)
+            neutral_tweets.append(tweet)
+    for i in range(len(negative_tweets) - 1, -1, -1):
+        tweet = negative_tweets[i]
+        if abs(tweet.sentiment_score) < neutral_cutoff:
+            negative_tweets.pop(i)
+            neutral_tweets.append(tweet)
 
     positive_tweets.sort(key=lambda x: x.sentiment_score, reverse=True)
     negative_tweets.sort(key=lambda x: x.sentiment_score)
+    neutral_tweets.sort(key=lambda x: abs(x.sentiment_score))
 
     # Persist the classifications
     with open(positive_tweet_file, "w") as f:
@@ -147,12 +173,19 @@ if __name__ == "__main__":
         for tweet in negative_tweets:
             f.write(tweet.text)
 
+    with open(neutral_tweet_file, "w") as f:
+        for tweet in neutral_tweets:
+            f.write(tweet.text)
+
     # Compute sentiment score
-    score = computeSentimentScore(positive_tweets, negative_tweets)
-    print("\n\nPositive Tweets: ")
+    score = computeSentimentScore(positive_tweets, negative_tweets, neutral_tweets, neutral_cutoff)
+    print("\n\nPositive Tweets: \n")
     for tweet in positive_tweets:
-        print(tweet.text)
-    print("\n\nNegative Tweets:")
+        print(tweet.text + "\n")
+    print("\n\nNegative Tweets: \n")
     for tweet in negative_tweets:
+        print(tweet.text + "\n")
+    print("\n\nNeutral Tweets: \n")
+    for tweet in neutral_tweets:
         print(tweet.text + "\n")
     print("Sentiment score (ranges from -1 to 1): " + str(score))
