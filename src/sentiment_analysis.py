@@ -256,11 +256,12 @@ def evaluate(model, loader, criterion):
 def predict(model, idx2word, word2idx, tweets):
     data = [[0, preprocess_string(x)] for x in tweets]
 
+    # Put the data in to a data loader
     dataset = TextDataset(data, "test", THRESHOLD, MAX_LEN, idx2word, word2idx)
     loader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=False, num_workers=1, drop_last=False)
-    # dataset = TextDataset(data, "test", THRESHOLD, MAX_LEN)
-    # loader = torch.utils.data.DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=2, drop_last=True)
     model.eval()
+
+    # Gather predictions
     all_predictions = []
     for tweet_batch, _ in loader:
         tweet_batch = tweet_batch.to(device)
@@ -269,8 +270,6 @@ def predict(model, idx2word, word2idx, tweets):
         for i in range(0, len(out)):
             preds.append(out[i][1] - out[i][0])
             preds[-1] = preds[-1].item()
-        # print(out)
-        # print(preds)
         all_predictions.extend(preds)
     return all_predictions
 
@@ -280,19 +279,14 @@ def build_model(force_rebuild=False):
     print("Loading Training Data")
     training_data = []
     with open("../Data/training_data.csv", "r") as f:
-        i = -1
         for line in f:
-            i += 1
-            if i % 1 != 0:    # Only load 1/160 of the training data
-                continue
-            
             row = preprocess(line)
             if row is not None:
                 training_data.append(row)
     training_dataset = TextDataset(training_data, "train", THRESHOLD, MAX_LEN)
     training_loader = torch.utils.data.DataLoader(training_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=2, drop_last=True)
 
-    # Check if we need to build a new model or load one
+    # Check if we need to build a new model or load one. If we can load, do that
     if not force_rebuild and os.path.exists("../Data/model"):
         model = torch.load("../Data/model")
         return (model, training_dataset.idx2word, training_dataset.word2idx)
@@ -320,7 +314,6 @@ def build_model(force_rebuild=False):
             dropout=0.5,
             num_classes=2,
             pad_idx=training_dataset.word2idx[PAD])
-    
     model = model.to(device)
 
     # Train the rnn
@@ -328,6 +321,7 @@ def build_model(force_rebuild=False):
     criterion = nn.CrossEntropyLoss().to(device)
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
     train(model, EPOCHS, training_loader, optimizer, criterion)
-    # evaluate(model, test_loader, criterion)
+
+    # Persist and return the new model
     torch.save(model, "../Data/model")
     return (model, training_dataset.idx2word, training_dataset.word2idx)

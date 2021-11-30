@@ -71,6 +71,7 @@ if __name__ == "__main__":
         for stock in stock_list:
             stocks.addStock(stock[0].lower(), stock[1].lower(), stock[3])
 
+    # Obtain symbol, name, and industry based on user input
     print("Enter stock ticker or company name. Company name must be exact.")
     symbol = None
     name = None
@@ -93,14 +94,14 @@ if __name__ == "__main__":
     run_rumber = None
     with open("../Tweets/run_number", "r") as f:
         run_number = int(f.read())
-    run_number += 1
+    run_number += 12
     with open("../Tweets/run_number", "w") as f:
         f.write(str(run_number))
     print("Outputs stored with run number " + str(run_number))
 
     # Retrieve relevant-ish tweets from twitter
     twitter_client = twitter_client.TwitterClient()
-    tweets = twitter_client.get_tweets(symbol, name, industry)
+    tweets = twitter_client.get_tweets(symbol, name, industry, tweets_limit=2000)
     tweets_lookup = {}
     for i in range(0, len(tweets)):
         tweet = tweets[i]
@@ -117,9 +118,9 @@ if __name__ == "__main__":
         for tweet in tweets:
             f.write(tweet.text + "\n")
 
-    # # Rank tweets, get best 50 tweets
+    # # Rank tweets, get most relevant 25% of tweets
     query = symbol + " " + name
-    ranker = rank.TweetRanking(all_tweet_file, query, ranked_tweet_file, 50, write_to_file=True)
+    ranker = rank.TweetRanking(all_tweet_file, query, ranked_tweet_file, int(len(tweets) / 4.0), write_to_file=True)
     best_tweets_index = ranker.get_ranked_documents()
     best_tweets = []
     best_tweets_text = []
@@ -160,6 +161,7 @@ if __name__ == "__main__":
             negative_tweets.pop(i)
             neutral_tweets.append(tweet)
 
+    # Sort each category of tweets so that the strongest examples are first
     positive_tweets.sort(key=lambda x: x.sentiment_score, reverse=True)
     negative_tweets.sort(key=lambda x: x.sentiment_score)
     neutral_tweets.sort(key=lambda x: abs(x.sentiment_score))
@@ -177,7 +179,7 @@ if __name__ == "__main__":
         for tweet in neutral_tweets:
             f.write(tweet.text)
 
-    # Compute sentiment score
+    # Compute sentiment score and output
     score = computeSentimentScore(positive_tweets, negative_tweets, neutral_tweets, neutral_cutoff)
     print("\n\nPositive Tweets: \n")
     for tweet in positive_tweets:
