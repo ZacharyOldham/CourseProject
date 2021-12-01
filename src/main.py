@@ -5,62 +5,92 @@ import rank
 import sentiment_analysis
 import statistics
 
+# Class that maintains information about stock symbols, company names, and company industries
 class Stocks:
+
+    # Initialize the class with empty stocks
     def __init__(self):
         self.stocks = []
         self.symbol_lookup = {}
         self.name_lookup = {}
 
+    # Add a stock
+    # symbol: the symbol for the stock
+    # name: the name of the company
+    # industry: the industry the company is in
     def addStock(self, symbol, name, industry):
         self.stocks.append((symbol, name, industry))
         self.symbol_lookup[symbol] = len(self.stocks) - 1
         self.name_lookup[name] = len(self.stocks) - 1
 
+    # get the stock symbol of a company
+    # name: the name of the company
     def getSymbolFromName(self, name):
         return self.stocks[self.name_lookup[name]][0]
 
+    # get the industry of a company
+    # name: the name of the company
     def getIndustryFromName(self, name):
         return self.stocks[self.name_lookup[name]][2]
 
+    # get the name of a company
+    # symbol: the stock symbol of the company
     def getNameFromSymbol(self, symbol):
         return self.stocks[self.symbol_lookup[symbol]][1]
 
+    # get the industry of a company
+    # symbol: the stock symbol of the company
     def getIndustryFromSymbol(self, symbol):
         return self.stocks[self.symbol_lookup[symbol]][2]
 
+    # check if a string is a valid stock symbol
+    # symbol: the string to check
     def isSymbol(self, symbol):
         return symbol in self.symbol_lookup
 
+    # check if a string is a valid company name
+    # name: the string to check
     def isName(self, name):
         return name in self.name_lookup
 
+# Compute a score that summarizes the general sentiment of the stock by generating a weight for positive, negative, and neutral tweets
+# positive_tweets: a list of positive tweets
+# negative_tweets: a list of negative tweets
+# neutral_tweets: a list of neutral tweets
+# neutral_cutoff: the cutoff used to determine if tweets are neutral
 def computeSentimentScore(positive_tweets, negative_tweets, neutral_tweets, neutral_cutoff):
     pos_score = 0
     neg_score = 0
     neu_score = 0
+
+    # Compute positive score
     for tweet in positive_tweets:
         if tweet.sentiment_score < 0:
             print("ERROR: NOT A POSITIVE TWEET")
             exit()
         pos_score += tweet.sentiment_score * ((tweet.likes_count + 1.0) ** (1.0 / 3.0)) * ((tweet.retweets_count + 1.0) ** (1.0 / 3.0)) * ((tweet.followers_count + 1.0) ** (1.0 / 4.0))
 
+    # Compute negative score
     for tweet in negative_tweets:
         if tweet.sentiment_score > 0:
             print("ERROR: NOT A NEGATIVE TWEET")
             exit()
         neg_score -= tweet.sentiment_score * ((tweet.likes_count + 1.0) ** (1.0 / 3.0)) * ((tweet.retweets_count + 1.0) ** (1.0 / 3.0)) * ((tweet.followers_count + 1.0) ** (1.0 / 4.0))
 
+    # Compute neutral score
     for tweet in neutral_tweets:
         if abs(tweet.sentiment_score) > neutral_cutoff:
             print("ERROR: NOT A NEUTRAL TWEET")
             exit()
         neu_score += (neutral_cutoff - abs(tweet.sentiment_score)) * ((tweet.likes_count + 1.0) ** (1.0 / 3.0)) * ((tweet.retweets_count + 1.0) ** (1.0 / 3.0)) * ((tweet.followers_count + 1.0) ** (1.0 / 4.0))
 
+    # Compute and return overall score
     if pos_score + neg_score + neu_score == 0:
         return 0
+    else:
+        return (pos_score - neg_score) / (pos_score + neg_score + neu_score)
 
-    return (pos_score - neg_score) / (pos_score + neg_score + neu_score)
-
+# Entry point for the entire project
 if __name__ == "__main__":
 
     # Load stock informtion
@@ -94,14 +124,14 @@ if __name__ == "__main__":
     run_rumber = None
     with open("../Tweets/run_number", "r") as f:
         run_number = int(f.read())
-    run_number += 12
+    run_number += 1
     with open("../Tweets/run_number", "w") as f:
         f.write(str(run_number))
     print("Outputs stored with run number " + str(run_number))
 
     # Retrieve relevant-ish tweets from twitter
     twitter_client = twitter_client.TwitterClient()
-    tweets = twitter_client.get_tweets(symbol, name, industry, tweets_limit=2000)
+    tweets = twitter_client.get_tweets(symbol, name, industry, tweets_limit=2)
     tweets_lookup = {}
     for i in range(0, len(tweets)):
         tweet = tweets[i]
@@ -118,7 +148,7 @@ if __name__ == "__main__":
         for tweet in tweets:
             f.write(tweet.text + "\n")
 
-    # # Rank tweets, get most relevant 25% of tweets
+    # Rank tweets, get most relevant 25% of tweets
     query = symbol + " " + name
     ranker = rank.TweetRanking(all_tweet_file, query, ranked_tweet_file, int(len(tweets) / 4.0), write_to_file=True)
     best_tweets_index = ranker.get_ranked_documents()
