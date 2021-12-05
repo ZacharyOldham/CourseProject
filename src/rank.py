@@ -5,8 +5,10 @@ import nltk
 from nltk.corpus import stopwords
 import os
 
-nltk.download("stopwords")
+nltk.download("stopwords", quiet=True)
 
+
+# Class for ranking of tweets according to query and additional processing.
 
 class TweetRanking:
 
@@ -44,6 +46,8 @@ class TweetRanking:
             output.write("\n")
             output.close()
 
+    # Preprocess of tweets, remove stop words and numbers from tweets if options are enabled.
+
     def preprocess_tweet(self, tweet):
         process_tweet = [word.lower() for word in tweet.split()]
 
@@ -54,6 +58,8 @@ class TweetRanking:
             process_tweet = [word for word in process_tweet if word.isalpha()]
         return process_tweet
 
+    # Create file with selected Tweets
+
     def pre_process_corpus(self):
         open(self.preprocess_file, "w+")
         open(self.preprocess_file, "r+").truncate(0)
@@ -62,6 +68,8 @@ class TweetRanking:
                 tweet = tweet.strip()
                 self.original_tweets.append(tweet)
                 self.save_to_file(self.preprocess_tweet(tweet), self.preprocess_file)
+
+    # Count words frequencies in corpus for processing of rare words.
 
     def count_words(self):
         frequency = defaultdict(int)
@@ -72,6 +80,8 @@ class TweetRanking:
         tweets.close()
         return frequency
 
+    # Load processed tweets and remove rare words if option is enabled.
+
     def get_processed_corpus(self):
         frequency_count = []
         output = []
@@ -80,6 +90,7 @@ class TweetRanking:
             frequency_count = self.count_words()
 
         with open(self.preprocess_file, "r") as tweets:
+            # Remove rare words with frequency equal to 1
             if self.remove_rare_words:
                 processed_tweets = [[word for word in tweet.split() if frequency_count[word] > 1]
                                     for tweet in tweets]
@@ -101,14 +112,21 @@ class TweetRanking:
 
         :return: Object with top_k ranked tweets, also writes file with the ranked tweets
         """
+        # Preprocess tweets
         self.pre_process_corpus()
+        # Load tweets and remove stop words if option is enabled
         processed_corpus = self.get_processed_corpus()
-        # print(processed_corpus)
+        # Creates a vocabulary from the list of tweets.
         dictionary = corpora.Dictionary(processed_corpus)
+        # Converts each tweet to a BOW representation, a list of tuples with the term id and count.
         corpus = [dictionary.doc2bow(text) for text in processed_corpus]
+        # Implementation of the BM25 ranking function.
         bm25_obj = bm25.BM25(corpus)
+        # Converts query to BOW representation.
         query_doc = dictionary.doc2bow(self.query.split())
+        # Return the relevance scores of all the tweets in relation to the query.
         scores = bm25_obj.get_scores(query_doc)
+        # Sort and Select the top_k scored tweets and return them.
         best_tweets = sorted(range(len(scores)), key=lambda i: scores[i])[-self.top_k:]
         if self.write_to_file:
             open(self.output_file, "w+")
