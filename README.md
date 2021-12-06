@@ -20,7 +20,32 @@ TODO
 
 ### src/rank.py
 
-TODO
+This file contains the rank class that is used to select the most relevant Tweets from the entire collection retrieved by `src/twitter_client.py`, it also performs additional
+processing.
+
+When an instance of the class is created is needs the following parameters:
+
+`corpus`: Set of tweets to be ranked
+
+`query`: Query to be used to rank tweets in corpus
+
+`output_file`: file to save ranked top_k tweets
+
+`top_k`: number of ranked tweets to be returned and saved to output_file
+
+`remove_stopwords`: Option to remove stopwords from set of tweets, default = True
+
+`remove_digits`: Option to remove numbers from set of tweets, default = True
+
+`remove_rare_words`: Option to remove word that appear only once, default = True
+
+The method `pre_process_corpus` process the Tweets according to the options selected, it may remove stop words and digits from the documents.
+
+The method `get_processed_corpus` returns the collection of Tweets ready to be ranked, it may remove rare words that appear only once in the entire collection.
+
+Finally, `get_ranked_documents` collects the processed collection of `Tweets` and rank them using `Gensim` implementation of `BM25`. The process of creating the model to score the `Tweets` involves the creation of a `dictionary` of unique terms from the collection and the creation of a `BOW` representation of each `Tweet`; this is a list of tuples with the term id and frequency for each word, it uses the provided query to calculate the relevance of each `Tweet` and returns the `top_k` documents, it also saves them to a file.
+
+
 
 ### src/sentimenet_analysis.py
 
@@ -40,7 +65,7 @@ Next is the `evaluate` function, which compares the models predictions on test d
 
 Next is the `predict` function. This function is responsible for generating sentiment predictions on our tweets. It requires as input a pre-trained model, a vocabulary, and a list of Tweets. It preprocesses and loads the Tweets into the `TextDataset` class and feeds them through the model in order to obtain sentiment predictions.
 
-Finally is the `build_model` function. This function is how `src/main.py` interfaces with this file to obtain a model. This function first loads the training dataset, as the vocabulary from this dataset is required regardless of whether a new model is to built or an old model is to be loaded. If an old model can be loaded, this function simply loads that model and returns it along with the vocabulary. If no old model can be loaded, it must buld and train a new one. To do this, it then loads the test data and utilizes the above utility functions to perform the training and evaluation. This new model is then persisted and returned, along with the training vocabulary.
+Finally, is the `build_model` function. This function is how `src/main.py` interfaces with this file to obtain a model. This function first loads the training dataset, as the vocabulary from this dataset is required regardless of whether a new model is to built or an old model is to be loaded. If an old model can be loaded, this function simply loads that model and returns it along with the vocabulary. If no old model can be loaded, it must buld and train a new one. To do this, it then loads the test data and utilizes the above utility functions to perform the training and evaluation. This new model is then persisted and returned, along with the training vocabulary.
 
 ## Installation (Guide for Windows 10 ONLY)
 
