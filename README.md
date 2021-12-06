@@ -10,7 +10,7 @@ This file is the primary entry point for our program.
 
 At the top of the file is a `Stocks` class. This is a utility class for easily interacting with `Data/stocks.csv`, which is a list of every stock ticker and corresponding company name. This is used for validating user input, as well as bolstering the user input with additional information beyond just the stock ticker. 
 
-Below this class is a function called `computeSentimentScore`, which takes our lists of categorized Tweets and computes a heuristic sentimnet score by building a weight for each category of Tweet and taking the ratio of the difference between the positive and negative weights, and the cumulative weight. 
+Below this class is a function called `computeSentimentScore`, which takes our lists of categorized Tweets and computes a heuristic sentiment score by building a weight for each category of Tweet and taking the ratio of the difference between the positive and negative weights, and the cumulative weight. 
 
 The entry point for the program is the line `if __name__ == "__main__":`. From here, this file handles the high-level interactions with our other utility files. It first populates the `Stocks` class, and uses it to obtain a valid user input. From there, it interfaces with `src/twitter_client.py` to obtain a list of Tweets from Twitter, and persists these. It next interfaces with `src/rank.py` to obtain the 25% most relevant Tweets to the user's input. Next, it interfaces with `sentiment_analysis.py` to obtain sentiment judgements for each Tweet, and divides the Tweets into positive, negative, and neutral categories. It persists these lists. Finally, it uses the `computeSentimentScore` function to get an overall sentiment score and outputs to the user. The sentiment score is also persisted.
 
@@ -93,29 +93,29 @@ Finally, `get_ranked_documents` collects the processed collection of `Tweets` an
 
 
 
-### src/sentimenet_analysis.py
+### src/sentiment_analysis.py
 
-This file handles everything related to sentiment classificiation. Specifically, it implementes a recursive neural network using PyTorch to accomplish this. 
+This file handles everything related to sentiment classification. Specifically, it implements a recursive neural network using PyTorch to accomplish this. 
 
 `TextDataset` class: This handles the tokenization of Tweets, and is also responsible for feeding the model input. A detailed description can be found in the comments. 
 
-`RNN` (Recursive Neural Network) class: This class extends the default neural network and is responsible for building the architecture of the neural network, and handling the 'forward' phase of training (passing input throught the various layers). Again, detailed descriptions can be found in the comments.
+`RNN` (Recursive Neural Network) class: This class extends the default neural network and is responsible for building the architecture of the neural network, and handling the 'forward' phase of training (passing input through the various layers). Again, detailed descriptions can be found in the comments.
 
 `preprocess` and `preprocess_string`: These functions are responsible for preprocessing training/test data, and raw tweets, respectively. Preprocessing is important for maximizing accuracy and ensuring all data is structured the same way.
 
 `accuracy`: This function takes model output and ground truth labels and compares them to compute accuracy. This function is only used when a new model is created.
 
-`train`: This contains the code that actuall performs the training passes on the neural network. This function is only used when a new model is created.
+`train`: This contains the code that actually performs the training passes on the neural network. This function is only used when a new model is created.
 
 `evaluate`: This compares the models predictions on test data to ground truth labels. This function is only used when a new model is created.
 
 `predict`: This function is responsible for generating sentiment predictions on our tweets. It requires as input a pre-trained model, a vocabulary, and a list of Tweets. It preprocesses and loads the Tweets into the `TextDataset` class and feeds them through the model in order to obtain sentiment predictions.
 
-`build_model`: This function is how `src/main.py` interfaces with this file to obtain a model. This function first loads the training dataset, as the vocabulary from this dataset is required regardless of whether a new model is to built or an old model is to be loaded. If an old model can be loaded, this function simply loads that model and returns it along with the vocabulary. If no old model can be loaded, it must buld and train a new one. To do this, it then loads the test data and utilizes the above utility functions to perform the training and evaluation. This new model is then persisted and returned, along with the training vocabulary.
+`build_model`: This function is how `src/main.py` interfaces with this file to obtain a model. This function first loads the training dataset, as the vocabulary from this dataset is required regardless of whether a new model is to built or an old model is to be loaded. If an old model can be loaded, this function simply loads that model and returns it along with the vocabulary. If no old model can be loaded, it must build and train a new one. To do this, it then loads the test data and utilizes the above utility functions to perform the training and evaluation. This new model is then persisted and returned, along with the training vocabulary.
 
 ## Installation (Guide for Windows 10 ONLY)
 
-It is reccommended that you use Anaconda to run this project. This is primarily due to anacondas robust environment system. To install Anaconda, follow the instructions on the [Anaconda website](https://www.anaconda.com/products/individual). Once you have anaconda installed, open an Anaconda prompt and navigate to the directory where you have cloned this repository, and then navigate to the `src` directory. 
+It is recommended that you use Anaconda to run this project. This is primarily due to anacondas robust environment system. To install Anaconda, follow the instructions on the [Anaconda website](https://www.anaconda.com/products/individual). Once you have anaconda installed, open an Anaconda prompt and navigate to the directory where you have cloned this repository, and then navigate to the `src` directory. 
 
 The next step is to setup an anaconda environment. To do this, run `conda create -n myenv python=3.9.7`. This will create a conda environment named `myenv` that has Python 3.9.7 installed. You can name this environment whatever you want, but for the purpose of this guide we will assume it was named `myenv`. Once you have done this, run `conda activate myenv` to enter the new environment.
 
@@ -151,7 +151,7 @@ Classifying Tweets...
 Loading Training Data...
 ```
 
-as the program progesses through its execution. At this point, two things could happen. If a model has been persisted, meaning `Data/model` exists, then that model will be loaded and the final output will be immediately displayed. If this file does not exist, a new model will be built. THIS IS NOT RECCOMMENDED. Using CPU, this process will take several days. Using GPU, it will take several hours. Our project includes a model that we have already trained, and you should make use of it. 
+as the program progresses through its execution. At this point, two things could happen. If a model has been persisted, meaning `Data/model` exists, then that model will be loaded and the final output will be immediately displayed. If this file does not exist, a new model will be built. THIS IS NOT RECOMMENDED. Using CPU, this process will take several days. Using GPU, it will take several hours. Our project includes a model that we have already trained, and you should make use of it. 
 
 Once a model has been either loaded or built, the final output will be displayed. This output will consist of the following: The line `Positive Tweets:` followed by a list of every relevant positive Tweet, sorted by decreasing positivity. The line `Negative Tweets:` followed by a list of every relevant negative Tweet, sorted by decreasing negativity. The line `Neutral Tweets:` followed by a list of every relevant neutral Tweet, sorted by decreasing negativity. And finally, the line `Sentiment score (ranges from -1 to 1): X` where `X` is the overall sentiment score extracted from the relevant Tweets. A sentiment score of 0 indicates a neutral overall sentiment, a positive sentiment score indicates a positive overall sentiment, and a negative sentiment score indicates a negative overall sentiment. The more extreme the sentiment score, the more extreme the overall sentiment. All of this output will also be written to files as described above.
 
