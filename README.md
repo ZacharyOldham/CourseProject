@@ -131,6 +131,8 @@ pip install nltk
 pip install torch
 ```
 
+Alternatively, you could run `pip install -r ../requirements.txt`
+
 If these installations go well, your environment should be prepared to run our project.
 
 The final setup step is to unzip `Data/model_data.zip` so that the files `Data/test_data.csv` and `Data/training_data.csv` are present. These files are too large to upload to GitHub, so they had to be zipped first.
