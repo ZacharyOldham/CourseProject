@@ -170,6 +170,12 @@ An example use case for this project would be to determine the overall sentiment
     <li>Wrote Installation and Usage sections of README.md. Also wrote README.md documentation for main.py and sentiment_analysis.py.</li>
 </ul>
 
+### Yogeswara Rao Lekkalapudi (yrl3)
+* Implemented twitter_client.py which provides api for accessing twitter data.
+* Preliminary preprocessing of tweets and providing a list of tweets with text and additional metadata. 
+* Explored Tweepy and Twitter APIs to fetch the relevant content.
+* README.md documentation for twitter_client.py and related documentation in the presentation.
+
 ## Sources
 <ul>
     <li>https://stockanalysis.com/stocks/ : Source of Data/stocks.csv, which contains a list of every stock symbol and company name.</li>
