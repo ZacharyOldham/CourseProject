@@ -1,6 +1,46 @@
 # Twitter Stock Sentiment Analysis
 
-## Overview
+## Code Overview
+
+This section is intended to provide a brief overview of the codebase. All code is well-documented, so those interested in a deeper understanding of the code should use this section to understand the high-level structure of the program, but should utilize the in-file comments for a more fine-grained understanding. 
+
+### src/main.py
+
+This file is the primary entry point for our program. 
+
+At the top of the file is a `Stocks` class. This is a utility class for easily interacting with `Data/stocks.csv`, which is a list of every stock ticker and corresponding company name. This is used for validating user input, as well as bolstering the user input with additional information beyond just the stock ticker. 
+
+Below this class is a function called `computeSentimentScore`, which takes our lists of categorized Tweets and computes a heuristic sentimnet score by building a weight for each category of Tweet and taking the ratio of the difference between the positive and negative weights, and the cumulative weight. 
+
+The entry point for the program is the line `if __name__ == "__main__":`. From here, this file handles the high-level interactions with our other utility files. It first populates the `Stocks` class, and uses it to obtain a valid user input. From there, it interfaces with `src/twitter_client.py` to obtain a list of Tweets from Twitter, and persists these. It next interfaces with `src/rank.py` to obtain the 25% most relevant Tweets to the user's input. Next, it interfaces with `sentiment_analysis.py` to obtain sentiment judgements for each Tweet, and divides the Tweets into positive, negative, and neutral categories. It persists these lists. Finally, it uses the `computeSentimentScore` function to get an overall sentiment score and outputs to the user. The sentiment score is also persisted.
+
+### src/twitter_client.py
+
+TODO
+
+### src/rank.py
+
+TODO
+
+### src/sentimenet_analysis.py
+
+This file handles everything related to sentiment classificiation. Specifically, it implementes a recursive neural network using PyTorch to accomplish this. 
+
+At the top of the file is the `TextDataset` class, which handles the tokenization of Tweets, and is also responsible for feeding the model input. A detailed description can be found in the comments. 
+
+Below this class is the `RNN` (Recursive Neural Network) class. This class extends the default neural network and is responsible for building the architecture of the neural network, and handling the 'forward' phase of training (passing input throught the various layers). Again, detailed descriptions can be found in the comments.
+
+Next in the file are two functions `preprocess` and `preprocess_string`. These functions are responsible for preprocessing training/test data, and raw tweets, respectively. Preprocessing is important for maximizing accuracy and ensuring all data is structured the same way.
+
+Next is the `accuracy` function, which takes model output and ground truth labels and compares them to compute accuracy. This function is only used when a new model is created.
+
+Next is the `train` function, which contains the code that actuall performs the training passes on the neural network. This function is only used when a new model is created.
+
+Next is the `evaluate` function, which compares the models predictions on test data to ground truth labels. This function is only used when a new model is created.
+
+Next is the `predict` function. This function is responsible for generating sentiment predictions on our tweets. It requires as input a pre-trained model, a vocabulary, and a list of Tweets. It preprocesses and loads the Tweets into the `TextDataset` class and feeds them through the model in order to obtain sentiment predictions.
+
+Finally is the `build_model` function. This function is how `src/main.py` interfaces with this file to obtain a model. This function first loads the training dataset, as the vocabulary from this dataset is required regardless of whether a new model is to built or an old model is to be loaded. If an old model can be loaded, this function simply loads that model and returns it along with the vocabulary. If no old model can be loaded, it must buld and train a new one. To do this, it then loads the test data and utilizes the above utility functions to perform the training and evaluation. This new model is then persisted and returned, along with the training vocabulary.
 
 ## Installation (Guide for Windows 10 ONLY)
 
