@@ -16,7 +16,53 @@ The entry point for the program is the line `if __name__ == "__main__":`. From h
 
 ### src/twitter_client.py
 
-TODO
+This file defines classes and methods for retrieving queries from Twitter. 
+There are two classes defined in this file, `TwitterClient` and `Tweet`. 
+
+`TwitterClient` takes "consumer_key" and "consumer_secret" as init parameters. These keys are generated from Twitter developer account. 
+Initializing the client with these keys are required to query the tweets from twitter. `Tweepy` is used for retrieving the tweets 
+
+`get_tweets` method is the main api method provided by `TwitterClient` for the other modules in the code to retrieve tweets from twitter. This method takes the following parameters 
+
+* `symbol`: Stock symbol (e.g: AMZN)
+
+* `name`: Name of the company (optional)
+
+* `industry`: Company Industry (optional)
+
+* `allow_duplicates`: Allows duplicate tweets if set to true. Default is false.
+
+* `tweets_limit`: Total number of tweets to load. Default is 500. This is the raw tweets counts. Final processed tweets count would be less than this number.
+
+* `tickers_threshold`: Maximum number of tickers allowed in the tweet
+
+`__query` method is an internal method used by `get_tweets` to load the tweets from Twitter. This method uses tweepy to search tweets. 
+It loads the most recent tweets and sets a limit on the number of tweets to load from Twitter using the value specified in the parameter. 
+This method takes the following parameters
+
+* `search_query` - Query to search tweets. It is just the stock ticker for our project.
+
+* `tweets_limit` - Number of tweets to load from Twitter. Defaults to 500 from `get_tweets` method. 
+
+`__preprocess` method is another internal method used by `__query`. Loaded tweets are preprocessed to remove non-ascii characters, new lines and converted to lowercase to keep the text uniform. 
+Tweets are also filtered in this function by dropping any tweets with more than three stock tickers. 
+Tweets with more than three stock tickers don't give good information about the specific stock in the query.
+This method takes one single tweet as the `raw_tweet` parameter which is a full tweet status object and returns the `Tweet` object with the processed tweet text and the additional metadata. 
+
+`save` method is a helper method to save tweets to a file. This method takes list of `Tweet` object and a file name and saves all the tweets text to the file. 
+
+`Tweet` is a data class for holding each processed tweet. Each tweet is stored as an object with all the required metadata. 
+This class defines the following fields 
+* `text` - Processed tweet text 
+
+* `likes_count` - Total number of likes for the tweet
+
+* `retweets_count` - Total number of times the tweet was retweeted.
+
+* `followers_count` - Total number of followers of the user who posted the tweet
+
+* `sentiment_score` - Sentiment score of the tweet. This is computed by the ML model
+
 
 ### src/rank.py
 
