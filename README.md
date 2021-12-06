@@ -2,7 +2,7 @@
 
 ## Code Overview
 
-This section is intended to provide a brief overview of the codebase. All code is well-documented, so those interested in a deeper understanding of the code should use this section to understand the high-level structure of the program, but should utilize the in-file comments for a more fine-grained understanding. 
+This section is intended to provide a brief overview of the codebase. All code is well-commented, so those interested in a deeper understanding of the code should use this section to understand the high-level structure of the program, but should utilize the in-file comments for a more fine-grained understanding. 
 
 ### src/main.py
 
@@ -97,21 +97,21 @@ Finally, `get_ranked_documents` collects the processed collection of `Tweets` an
 
 This file handles everything related to sentiment classificiation. Specifically, it implementes a recursive neural network using PyTorch to accomplish this. 
 
-At the top of the file is the `TextDataset` class, which handles the tokenization of Tweets, and is also responsible for feeding the model input. A detailed description can be found in the comments. 
+`TextDataset` class: This handles the tokenization of Tweets, and is also responsible for feeding the model input. A detailed description can be found in the comments. 
 
-Below this class is the `RNN` (Recursive Neural Network) class. This class extends the default neural network and is responsible for building the architecture of the neural network, and handling the 'forward' phase of training (passing input throught the various layers). Again, detailed descriptions can be found in the comments.
+`RNN` (Recursive Neural Network) class: This class extends the default neural network and is responsible for building the architecture of the neural network, and handling the 'forward' phase of training (passing input throught the various layers). Again, detailed descriptions can be found in the comments.
 
-Next in the file are two functions `preprocess` and `preprocess_string`. These functions are responsible for preprocessing training/test data, and raw tweets, respectively. Preprocessing is important for maximizing accuracy and ensuring all data is structured the same way.
+`preprocess` and `preprocess_string`: These functions are responsible for preprocessing training/test data, and raw tweets, respectively. Preprocessing is important for maximizing accuracy and ensuring all data is structured the same way.
 
-Next is the `accuracy` function, which takes model output and ground truth labels and compares them to compute accuracy. This function is only used when a new model is created.
+`accuracy`: This function takes model output and ground truth labels and compares them to compute accuracy. This function is only used when a new model is created.
 
-Next is the `train` function, which contains the code that actuall performs the training passes on the neural network. This function is only used when a new model is created.
+`train`: This contains the code that actuall performs the training passes on the neural network. This function is only used when a new model is created.
 
-Next is the `evaluate` function, which compares the models predictions on test data to ground truth labels. This function is only used when a new model is created.
+`evaluate`: This compares the models predictions on test data to ground truth labels. This function is only used when a new model is created.
 
-Next is the `predict` function. This function is responsible for generating sentiment predictions on our tweets. It requires as input a pre-trained model, a vocabulary, and a list of Tweets. It preprocesses and loads the Tweets into the `TextDataset` class and feeds them through the model in order to obtain sentiment predictions.
+`predict`: This function is responsible for generating sentiment predictions on our tweets. It requires as input a pre-trained model, a vocabulary, and a list of Tweets. It preprocesses and loads the Tweets into the `TextDataset` class and feeds them through the model in order to obtain sentiment predictions.
 
-Finally, is the `build_model` function. This function is how `src/main.py` interfaces with this file to obtain a model. This function first loads the training dataset, as the vocabulary from this dataset is required regardless of whether a new model is to built or an old model is to be loaded. If an old model can be loaded, this function simply loads that model and returns it along with the vocabulary. If no old model can be loaded, it must buld and train a new one. To do this, it then loads the test data and utilizes the above utility functions to perform the training and evaluation. This new model is then persisted and returned, along with the training vocabulary.
+`build_model`: This function is how `src/main.py` interfaces with this file to obtain a model. This function first loads the training dataset, as the vocabulary from this dataset is required regardless of whether a new model is to built or an old model is to be loaded. If an old model can be loaded, this function simply loads that model and returns it along with the vocabulary. If no old model can be loaded, it must buld and train a new one. To do this, it then loads the test data and utilizes the above utility functions to perform the training and evaluation. This new model is then persisted and returned, along with the training vocabulary.
 
 ## Installation (Guide for Windows 10 ONLY)
 
@@ -158,3 +158,18 @@ Once a model has been either loaded or built, the final output will be displayed
 ## Example Use Case
 
 An example use case for this project would be to determine the overall sentiment on Twitter about Apple's stock. This could be accomplished by running our project and entering either `aapl` or `apple` as input. This would have our project retrieve Tweets from Twitter, rank them by relevant to Apple's stock, sort the relevant Tweets by sentiment, and then compute an overall sentiment score for Apple's stock. We have included the output of a run of our project using `aapl` as input with the number 1 in the `Tweets` directory. This run was completed on 12/05/21.
+
+## Group Member Contributions
+
+### Zachary Oldham (zoldham2)
+<ul>
+    <li>Implemented sentiment_analysis.py which provides all the utilities for generating sentiment predictions over Tweets. Also located the training dataset used to train the sentiment model.</li>
+    <li>Implemented main.py to connect all project components and interface with the user. Also located csv containing list of all stock tickers and company names.</li>
+    <li>Wrote Installation and Usage sections of README.md. Also wrote README.md documentation for main.py and sentiment_analysis.py.</li>
+</ul>
+
+## Sources
+<ul>
+    <li>https://stockanalysis.com/stocks/ : Source of Data/stocks.csv, which contains a list of every stock symbol and company name.</li>
+    <li>http://help.sentiment140.com/for-students : Source of Data/test_data.csv and Data/training_data.csv, which are used for training the neural network.</li>
+</ul>
