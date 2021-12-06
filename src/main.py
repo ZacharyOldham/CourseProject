@@ -130,8 +130,9 @@ if __name__ == "__main__":
     print("Outputs stored with run number " + str(run_number))
 
     # Retrieve relevant-ish tweets from twitter
+    print("Retrieving Tweets from Twitter...")
     twitter_client = twitter_client.TwitterClient()
-    tweets = twitter_client.get_tweets(symbol, name, industry, tweets_limit=1000)
+    tweets = twitter_client.get_tweets(symbol, name, industry, tweets_limit=2000)
     tweets_lookup = {}
     for i in range(0, len(tweets)):
         tweet = tweets[i]
@@ -143,12 +144,14 @@ if __name__ == "__main__":
     positive_tweet_file = "../Tweets/positive_tweets_" + str(run_number) + ".txt"
     negative_tweet_file = "../Tweets/negative_tweets_" + str(run_number) + ".txt"
     neutral_tweet_file = "../Tweets/neutral_tweets_" + str(run_number) + ".txt"
+    score_file = "../Tweets/score_" + str(run_number) + ".txt"
 
     with open(all_tweet_file, "w") as f:
         for tweet in tweets:
             f.write(tweet.text + "\n")
 
     # Rank tweets, get most relevant 25% of tweets
+    print("Ranking Tweets...")
     query = symbol + " " + name
     ranker = rank.TweetRanking(all_tweet_file, query, ranked_tweet_file, int(len(tweets) / 4.0), write_to_file=True)
     best_tweets_index = ranker.get_ranked_documents()
@@ -159,6 +162,7 @@ if __name__ == "__main__":
         best_tweets_text.append(tweets[best_tweets_index[i]].text)
     
     # Get tweet classifications < 0 = negative, > 0 = positive
+    print("Classifying Tweets...")
     model, idx2word, word2idx = sentiment_analysis.build_model()
     labels = sentiment_analysis.predict(model, idx2word, word2idx, best_tweets_text)
     for i in range(0, len(best_tweets)):
@@ -211,6 +215,8 @@ if __name__ == "__main__":
 
     # Compute sentiment score and output
     score = computeSentimentScore(positive_tweets, negative_tweets, neutral_tweets, neutral_cutoff)
+    with open(score_file, "w") as f:
+        f.write(str(score))
     print("\n\nPositive Tweets: \n")
     for tweet in positive_tweets:
         print(tweet.text + "\n")

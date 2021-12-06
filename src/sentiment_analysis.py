@@ -371,7 +371,7 @@ def predict(model, idx2word, word2idx, tweets):
 def build_model(force_rebuild=False):
 
     # Load training data
-    print("Loading Training Data")
+    print("Loading Training Data...")
     training_data = []
     with open("../Data/training_data.csv", "r") as f:
         for line in f:
@@ -383,11 +383,11 @@ def build_model(force_rebuild=False):
 
     # Check if we need to build a new model or load one. If we can load, do that
     if not force_rebuild and os.path.exists("../Data/model"):
-        model = torch.load("../Data/model")
+        model = torch.load("../Data/model", map_location=device)
         return (model, training_dataset.idx2word, training_dataset.word2idx)
 
     # Load test data
-    print("Loading Test Data")
+    print("Loading Test Data...")
     test_data = []
     with open("../Data/test_data.csv", "r") as f:
         for line in f:
@@ -400,7 +400,7 @@ def build_model(force_rebuild=False):
     print("Building model using " + ("GPU" if torch.cuda.is_available() else "CPU"))
 
     # Build RNN
-    print("Building RNN")
+    print("Building RNN...")
     model =   RNN(vocab_size=training_dataset.vocab_size,
             embed_size=256,
             hidden_size=256,
@@ -412,7 +412,7 @@ def build_model(force_rebuild=False):
     model = model.to(device)
 
     # Train the rnn
-    print("Training RNN")
+    print("Training RNN...")
     criterion = nn.CrossEntropyLoss().to(device)
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
     train(model, EPOCHS, training_loader, optimizer, criterion)
