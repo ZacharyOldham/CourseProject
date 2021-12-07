@@ -178,7 +178,7 @@ An example use case for this project would be to determine the overall sentiment
 
 ### Luis Mariano Ovalle Castaneda (lo22)
 <ul>
-    <li>Implemented rank.py, which scores and selects the Tweets relevant to our application, also do additional Tweets processing like removing stop words using a list from NLTK toolkit. </li>
+    <li>Implemented rank.py, which scores and selects Tweets relevant to our application from the entire retrieve collection. It also does additional Tweets processing like removing stop words using a list from the NLTK toolkit. </li>
     <li>Used Gensim toolkit for Tweets scoring on rank.py (BM25 function).</li>
     <li>README.md documentation for rank.py and presentation slides elaboration.</li>
 </ul>
