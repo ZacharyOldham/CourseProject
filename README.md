@@ -1,5 +1,11 @@
 # Twitter Stock Sentiment Analysis
 
+## Final Presentation
+
+You can find the slides for our final presentation [here](https://docs.google.com/presentation/d/1ZkVIKUIcwkmzuacUIwYvbq4vNB2DmOIH1nRxRNEu34E/edit?usp=sharing)
+
+You can find the video recording of our final presentation [here](https://youtu.be/gflr3wPOpdk)
+
 ## Code Overview
 
 This section is intended to provide a brief overview of the codebase. All code is well-commented, so those interested in a deeper understanding of the code should use this section to understand the high-level structure of the program, but should utilize the in-file comments for a more fine-grained understanding. 
